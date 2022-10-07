@@ -4,22 +4,28 @@ using UnityEngine;
 
 public class FlyControl : MonoBehaviour
 {
-    Rigidbody2D rigidbody;
+    Rigidbody2D rb;
+    [SerializeField]
+    GameObject Player;
 
     [SerializeField]
     Animator animator;
 
     [SerializeField]
     AudioSource sndBee;
-    
+
     [SerializeField]
     float SpeedX, SpeedY;
+    float rndX, rndY;
 
     bool fly = true;
 
     void Start()
     {
-        rigidbody = GetComponent<Rigidbody2D>();
+        rb = GetComponent<Rigidbody2D>();
+        //Physics2D.IgnoreCollision(Player.GetComponent<Collider2D>(), GetComponent<Collider2D>());
+
+        StartCoroutine(WaitForRotation());
     }
 
     void Update()
@@ -40,7 +46,7 @@ public class FlyControl : MonoBehaviour
         if (collision.collider.tag == "Obstackle")
         {
             fly = false;
-            rigidbody.Sleep();
+            rb.Sleep();
         }
     }
 
@@ -51,15 +57,18 @@ public class FlyControl : MonoBehaviour
         StopCoroutine(Wait());
         
 
-        float rndX = Random.Range(SpeedX * -1f, SpeedX);
-        float rndY = Random.Range(SpeedY * -1f, SpeedY);
+        
 
         // test letu vpravo - vlevo
         if (rndX < 0f)
         {
-            transform.localScale = new Vector2(transform.localScale.x * -1f, transform.localScale.y);
+            transform.localScale = new Vector2(0.3f * -1f, transform.localScale.y);
         }
-        rigidbody.AddRelativeForce(new Vector2(rndX, rndY), ForceMode2D.Impulse);
+        else
+        {
+            transform.localScale = new Vector2(0.3f * 1f, transform.localScale.y);
+        }
+        rb.AddRelativeForce(new Vector2(rndX, rndY), ForceMode2D.Impulse);
     }
 
     void Idle()
@@ -76,6 +85,15 @@ public class FlyControl : MonoBehaviour
             
             yield return new WaitForSeconds(3f);
             fly = true;
+        }
+    }
+    IEnumerator WaitForRotation()
+    {
+        while (true)
+        {
+            rndX = Random.Range(SpeedX * -1f, SpeedX);
+            rndY = Random.Range(SpeedY * -1f, SpeedY);
+            yield return new WaitForSeconds(0.1f);
         }
     }
 }
