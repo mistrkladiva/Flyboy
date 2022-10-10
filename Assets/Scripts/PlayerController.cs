@@ -2,19 +2,23 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using TMPro;
 
 public class PlayerController : MonoBehaviour
 {
     Rigidbody2D rb;
-    [SerializeField]
     Animator animator;
+
     [SerializeField]
     GameObject FlyDeath, Fly;
-    GameObject FlyInst;
+    [SerializeField]
+    TextMeshProUGUI txtFlyDeathCount;
+
 
     float direction = 0, speedRun = 30, Scale;
     bool run, jump, idle, attack, grounded;
     int jumpCount = 0;
+    int flyDeathCount = 0;
 
     Vector2 velocity;
     Collider2D colider;
@@ -24,12 +28,14 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         Scale = transform.localScale.x;
         colider = GetComponent<Collider2D>();
+        animator = GetComponent<Animator>();
     }
 
     void Update()
     {
         grounded = colider.IsTouchingLayers(LayerMask.GetMask("Ground"));
         
+        // je ve vzduchu?
         if (grounded)
         {
             jump = false;
@@ -49,7 +55,7 @@ public class PlayerController : MonoBehaviour
 
         if (direction == 0)
         {
-            if (grounded && (!jump && !attack))
+            if (grounded && !jump && !attack)
             {
                 animator.Play("PlayerIdle");
             }
@@ -61,7 +67,15 @@ public class PlayerController : MonoBehaviour
         GameObject goColider = collision.transform.parent.gameObject;
 
         if (collision.tag == "Fly" && attack)
-        {            
+        {   
+            flyDeathCount++;
+            txtFlyDeathCount.text = flyDeathCount.ToString();
+            if (flyDeathCount > 9)
+            {
+                // You Win!
+                flyDeathCount = 0;
+            }
+
             var flyDeathInstance = Instantiate(FlyDeath, goColider.transform.position, Quaternion.identity);
             FlyRespawn.s_Flys.Remove(goColider);
             Destroy(goColider);
@@ -105,7 +119,6 @@ public class PlayerController : MonoBehaviour
     {
         if (jumpCount < 1)
         {
-            //animator.StopPlayback();
             velocity = rb.velocity;
             velocity.y = 15;
             rb.velocity = velocity;
@@ -118,9 +131,10 @@ public class PlayerController : MonoBehaviour
     void Attack()
     {
         attack = true;
-        //animator.Play("PlayerAttack", 0, 0);
         animator.Play("PlayerAttack");
     }
+
+    // metoda pro Animation event spustí se po dokonèení animace
     public void AttackEnd()
     {
         attack = false;

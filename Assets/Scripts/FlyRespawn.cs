@@ -16,12 +16,6 @@ public class FlyRespawn : MonoBehaviour
         StartCoroutine(WaitForRespawn());
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     IEnumerator WaitForRespawn()
     {
         while (true)

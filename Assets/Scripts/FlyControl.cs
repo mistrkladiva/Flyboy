@@ -5,8 +5,6 @@ using UnityEngine;
 public class FlyControl : MonoBehaviour
 {
     Rigidbody2D rb;
-    [SerializeField]
-    GameObject Player;
 
     [SerializeField]
     Animator animator;
@@ -18,19 +16,17 @@ public class FlyControl : MonoBehaviour
     float SpeedX, SpeedY;
     float rndX, rndY;
 
-    bool fly = true;
+    bool flying = true;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        //Physics2D.IgnoreCollision(Player.GetComponent<Collider2D>(), GetComponent<Collider2D>());
-
         StartCoroutine(WaitForRotation());
     }
 
     void Update()
     {
-        if(fly)
+        if(flying)
         {
             Flying();
         }
@@ -45,7 +41,7 @@ public class FlyControl : MonoBehaviour
     {
         if (collision.collider.tag == "Obstackle")
         {
-            fly = false;
+            flying = false;
             rb.Sleep();
         }
     }
@@ -56,9 +52,6 @@ public class FlyControl : MonoBehaviour
         sndBee.UnPause();
         StopCoroutine(Wait());
         
-
-        
-
         // test letu vpravo - vlevo
         if (rndX < 0f)
         {
@@ -80,11 +73,10 @@ public class FlyControl : MonoBehaviour
 
     IEnumerator Wait()
     {
-        while (!fly)
-        {
-            
+        while (!flying)
+        {           
             yield return new WaitForSeconds(3f);
-            fly = true;
+            flying = true;
         }
     }
     IEnumerator WaitForRotation()
