@@ -7,25 +7,20 @@ using UnityEngine.Windows;
 using System.Security.Claims;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Linq;
 
 public class PlayerController : MonoBehaviour
 {
     Rigidbody2D rb;
     Animator animator;
-    [SerializeField]
-    Animator bossAnimator;
-    [SerializeField]
-    Image Plocha;
-
-    [SerializeField]
-    GameObject FlyDeath, Fly, HealthPlayer;
+    [SerializeField] Animator bossAnimator;
+    [SerializeField] Image Plocha;
+    [SerializeField] GameObject FlyDeath, Fly, HealthPlayer;
+    [SerializeField] public int live;
 
     float direction = 0, speedRun = 30, Scale;
-    bool run, jump, idle, attack, attackPressed, grounded;
+    bool jump, attack, attackPressed, grounded;
     int jumpCount = 0;
-
-    [SerializeField]
-    public int live;
 
     Vector2 velocity;
     Collider2D colider;
@@ -74,7 +69,6 @@ public class PlayerController : MonoBehaviour
         if (collision.tag == "Fly" && !attack)
         {
             HealthPlayer.GetComponent<HealthPlayer>().ShowHealth(--live);
-
         }
 
         if (collision.tag == "Boss" && !attack)
@@ -84,7 +78,9 @@ public class PlayerController : MonoBehaviour
 
         if (live <= 0)
         {
-            StatsText.StatText = "YOU LOSE!";
+            StartGame.StatText = "YOU LOSE!";
+            StartGame.BossMusicPlay = false;
+            StartGame.YouLose = true;
             SceneManager.LoadScene("Start");
         }
             
@@ -98,9 +94,10 @@ public class PlayerController : MonoBehaviour
 
             // vytvoøí mrtvou mouchu a odstraní pùvodní mouchu
             var flyDeathInstance = Instantiate(FlyDeath, goColider.transform.position, Quaternion.identity);
+            GameController.s_FlysDeath.Add(flyDeathInstance);
             GameController.s_Flys.Remove(goColider);
             Destroy(goColider);
-            // moucha by nemìla kolidovat s playerem
+            // mrtvá moucha by nemìla kolidovat s playerem
             Physics2D.IgnoreCollision(flyDeathInstance.GetComponent<Collider2D>(), GetComponent<Collider2D>());
 
             // Ostatní mouchy by nemìly kolidovat s mrtvolami - moc nefunguje TODO
@@ -134,7 +131,6 @@ public class PlayerController : MonoBehaviour
             collision.GetComponentInChildren<HealthBoss>().ShowHealth(bossLive);
 
             if (collision.GetComponent<BossController>().live < 1)
-            //if (GameController.s_Flys.Count == 0)
             {
                 GameController.s_Flys.Remove(collision.gameObject);
                 Destroy(collision.gameObject);
@@ -152,7 +148,16 @@ public class PlayerController : MonoBehaviour
 
     void OnJump()
     {
-        Jump();
+        if (jumpCount < 1)
+        {
+            velocity = rb.velocity;
+            velocity.y = 15;
+            rb.velocity = velocity;
+            if (!attack)
+                animator.Play("PlayerJump", 0, 0);
+            jumpCount++;
+            jump = true;
+        }
     }
 
     void OnAttack(InputValue input)
@@ -160,7 +165,10 @@ public class PlayerController : MonoBehaviour
         if (input.isPressed)
         {
             attackPressed = true;
-            Attack();
+            attack = true;
+            animator.Play("PlayerAttack");
+            StartCoroutine(AttackAnimation());
+            GetComponent<AudioSource>().Play();
         }
     }
 
@@ -175,27 +183,6 @@ public class PlayerController : MonoBehaviour
             animator.Play("PlayerRun");
     }
 
-    void Jump()
-    {
-        if (jumpCount < 1)
-        {
-            velocity = rb.velocity;
-            velocity.y = 15;
-            rb.velocity = velocity;
-            if (!attack)
-                animator.Play("PlayerJump", 0, 0);
-            jumpCount++;
-            jump = true;
-        }
-    }
-    void Attack()
-    {
-        attack = true;
-        animator.Play("PlayerAttack");
-        StartCoroutine(AttackAnimation());
-        GetComponent<AudioSource>().Play();
-    }
-
     // metoda pro Animation event spustí se po dokonèení animace
     public void AttackEnd()
     {
@@ -205,8 +192,7 @@ public class PlayerController : MonoBehaviour
 
     IEnumerator AttackAnimation()
     {
-        //animator.Play("PlayerAttack");
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(0.3f); // délka animace
         attack = false;
         attackPressed = false;
     }
@@ -222,15 +208,11 @@ public class PlayerController : MonoBehaviour
         }
 
         yield return new WaitForSeconds(1f);
-        StatsText.StatText = "YOU WIN!";
+        StartGame.StatText = "YOU WIN!";
+        AudioSource BossMusic = FindObjectsOfType<AudioSource>().Where(aSource => aSource.name == "BossMusic").FirstOrDefault();
+        StartGame.BossMusicDuration = BossMusic.time;
+        StartGame.BossMusicPlay = true;
+
         SceneManager.LoadScene("Start");
-        //float volume = 0;
-        //c = Plocha.color;
-        //for (float alpha = 1f; alpha >= 0; alpha -= 0.1f)
-        //{
-        //    c.a = alpha;
-        //    volume += 0.1f;
-        //    yield return new WaitForSeconds(0.1f);
-        //}
     }
 }

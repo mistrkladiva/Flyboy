@@ -5,11 +5,11 @@ using UnityEngine;
 
 public class HealthPlayer : MonoBehaviour
 {
+    
+    [SerializeField] GameObject Player;
     Transform HealthForeground;
-    [SerializeField]
-    GameObject Player;
-
     float Live;
+
     void Start()
     {
         HealthForeground = gameObject.transform.Find("HealthBarForeground");

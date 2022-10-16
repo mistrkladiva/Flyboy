@@ -4,18 +4,12 @@ using UnityEngine;
 
 public class FlyControl : MonoBehaviour
 {
+    [SerializeField] Animator animator;
+    [SerializeField] AudioSource sndBee;
+    [SerializeField] float SpeedX, SpeedY;
+    
     Rigidbody2D rb;
-
-    [SerializeField]
-    Animator animator;
-
-    [SerializeField]
-    AudioSource sndBee;
-
-    [SerializeField]
-    float SpeedX, SpeedY;
     float rndX, rndY;
-
     bool flying = true;
 
     void Start()
@@ -74,6 +68,7 @@ public class FlyControl : MonoBehaviour
         StartCoroutine(Wait());
     }
 
+    // po dosednutí na platformu èeká 3s
     IEnumerator Wait()
     {
         while (!flying)

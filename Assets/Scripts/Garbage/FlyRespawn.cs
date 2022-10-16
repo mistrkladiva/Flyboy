@@ -5,11 +5,11 @@ using UnityEngine;
 
 public class FlyRespawn : MonoBehaviour
 {
-    [SerializeField]
-    GameObject Fly, Player;
+    [SerializeField] GameObject Fly, Player;
+    [SerializeField] float SpeedRespawn;
+
     public int live = 3;
-    [SerializeField]
-    float SpeedRespawn;
+
     [Header("View Range")]
     [Range(0, 6)]
     public float radius = 6;
@@ -32,12 +32,14 @@ public class FlyRespawn : MonoBehaviour
             float screenX = Mathf.Cos(rndAngle) * rndRadius + transform.position.x + posX;
             float screenY = Mathf.Sin(rndAngle) * rndRadius + transform.position.y + posY;
 
-
             var InstantiateFly = Instantiate(Fly, new Vector3(screenX, screenY, Fly.transform.position.z), Quaternion.identity);
-
             Physics2D.IgnoreCollision(InstantiateFly.GetComponent<Collider2D>(), Player.GetComponent<Collider2D>());
+            
+            foreach (var deathFly in GameController.s_FlysDeath)
+            {
+                Physics2D.IgnoreCollision(InstantiateFly.GetComponent<Collider2D>(), deathFly.GetComponent<Collider2D>());
+            }
             GameController.s_Flys.Add(InstantiateFly);
-
             yield return new WaitForSeconds(SpeedRespawn);
         }
     }

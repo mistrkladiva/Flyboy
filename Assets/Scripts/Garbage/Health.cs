@@ -5,9 +5,9 @@ using UnityEngine;
 
 public class Health : MonoBehaviour
 {
-    Transform HealthForeground;
-    
+    Transform HealthForeground;   
     float Live;
+
     void Start()
     {
         HealthForeground = gameObject.transform.Find("HealthBarForeground");

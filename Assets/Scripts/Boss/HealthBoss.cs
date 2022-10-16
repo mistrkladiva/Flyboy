@@ -6,8 +6,8 @@ using UnityEngine;
 public class HealthBoss : MonoBehaviour
 {
     Transform HealthForeground;
-
     float Live;
+
     void Start()
     {
         HealthForeground = gameObject.transform.Find("HealthBarForeground");
